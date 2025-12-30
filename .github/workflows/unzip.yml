@@ -1,0 +1,33 @@
+name: Распаковка ZIP
+
+on:
+  push:
+    paths:
+      - '**/*.zip'   # Любой ZIP, который добавишь
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Клонируем репозиторий
+      - uses: actions/checkout@v3
+
+      # 2. Распаковываем ZIP
+      - name: Распаковать ZIP
+        run: |
+          for zip in *.zip; do
+            if [ -f "$zip" ]; then
+              echo "Распаковываем $zip..."
+              unzip -o "$zip" -d "${zip%.zip}"
+            fi
+          done
+
+      # 3. Коммитим распакованные файлы обратно
+      - name: Коммит и пуш
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet || git commit -m "Автоматически распакованы ZIP файлы"
+          git push
